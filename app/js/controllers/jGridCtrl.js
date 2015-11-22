@@ -31,7 +31,7 @@
                 for(var j = 0; j < vm.gridScripts[i].length; j++) {
                     var f = new Function(vm.gridScripts[i][j]);
                     console.log(f());
-                    vm.gridValues[i][j] = f();
+                    vm.gridValues[j][i] = f();
                 }
             }
         }, true);
