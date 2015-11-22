@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+<head>
+    <title>jGrid</title>
+    <style>
+        span.grid {
+            display: inline-block;
+            background-color: #eeeeee;
+            width: 25px;
+            height: 25px;
+            margin-right: 3px;
+            margin-bottom: 3px;
+            overflow: hidden;
+            padding: 0;
+            vertical-align: top;
+        }
+
+        span.selected {
+            background-color: yellow;
+        }
+
+        #values {
+            float: left;
+        }
+
+        #codeBox {
+            float: left;
+        }
+    </style>
+</head>
+<body ng-app="jGrid">
+    <div ng-controller="JGridCtrl as vm">
+        <div id="values">
+            <div ng-repeat="row in vm.gridValues track by $index">
+                <span class="grid"
+                      ng-click="vm.selectGrid($index, $parent.$index)"
+                      ng-class="{true: 'selected'}[vm.y == $parent.$index && vm.x == $index]" 
+                      ng-repeat="col in row track by $index">{{ col }}</span>
+            </div>
+        </div>
+
+        <div id="codeBox">
+            <textarea ng-model="vm.gridScripts[vm.x][vm.y]"></textarea>
+        </div>
+    </div>
+
+    <script src="js/lib/angular/angular.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/controllers/jGridCtrl.js"></script>
+</body>
+</html>    
