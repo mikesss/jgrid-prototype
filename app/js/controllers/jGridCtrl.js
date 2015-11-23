@@ -35,6 +35,37 @@
             return vm.gridValues[x][y];
         }
 
+        var _columnLetterToIndex = function (letter) {
+            return letter.codePointAt(0) - 65;
+        }
+
+        var R = function (selector) {
+            if (typeof selector !== 'string' || selector.indexOf(':') === -1) {
+                console.error('bad selector syntax');
+                return [];
+            }
+
+            // TODO: Allow different types of separators
+            var selectorPieces = selector.split(':');
+
+            // TODO: Allow more than two cell references in a selector
+            if (selectorPieces.length !== 2) {
+                console.error('bad selector syntax');
+                return [];
+            }
+
+            var selectorStart = selectorPieces[0];
+            var selectorEnd = selectorPieces[1];
+
+            // TODO: Allow referencing different columns for start and end part of range
+            var column = _columnLetterToIndex(selectorStart[0]);
+
+            var rowstart = Number.parseInt(selectorStart.slice(1));
+            var rowend = Number.parseInt(selectorEnd.slice(1));
+
+            return vm.gridValues[column].slice(rowstart, rowend + 1);
+        }
+
         var promiseResolve = function(x, y) {
             return function(v) {
                 console.log(x, y);
@@ -46,8 +77,8 @@
         $scope.$watch('vm.gridScripts', function() {
             for(var i = 0; i < vm.gridScripts.length; i++) {
                 for(var j = 0; j < vm.gridScripts[i].length; j++) {
-                    var f   = new Function('G', 'f', vm.gridScripts[i][j]);
-                    var val = f(G, fetch);
+                    var f   = new Function('G', 'R', 'f', vm.gridScripts[i][j]);
+                    var val = f(G, R, fetch);
                     if(val instanceof Promise) {
                         val.then(promiseResolve(j, i)).catch(function(e) {
                             console.error(e);
