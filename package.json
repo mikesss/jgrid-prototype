@@ -1,0 +1,31 @@
+{
+  "name": "jgrid",
+  "version": "0.0.0",
+  "description": "jgrid",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mikesss/jgrid.git"
+  },
+  "keywords": [
+    "spreadsheet",
+    "grid"
+  ],
+  "author": "Mike Sutjipto",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mikesss/jgrid/issues"
+  },
+  "homepage": "https://github.com/mikesss/jgrid#readme",
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-browserify": "^4.0.1",
+    "grunt-contrib-watch": "^0.6.1"
+  },
+  "dependencies": {
+    "angular": "^1.4.8"
+  }
+}

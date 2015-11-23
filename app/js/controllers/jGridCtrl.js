@@ -1,4 +1,5 @@
 (function() {
+    require('angular/angular');
 
     function JGridCtrl($scope) {
         var vm          = this;
@@ -77,8 +78,8 @@
         $scope.$watch('vm.gridScripts', function() {
             for(var i = 0; i < vm.gridScripts.length; i++) {
                 for(var j = 0; j < vm.gridScripts[i].length; j++) {
-                    var f   = new Function('G', 'R', 'f', vm.gridScripts[i][j]);
-                    var val = f(G, R, fetch);
+                    var f   = new Function('G', 'R', vm.gridScripts[i][j]);
+                    var val = f(G, R);
                     if(val instanceof Promise) {
                         val.then(promiseResolve(j, i)).catch(function(e) {
                             console.error(e);
