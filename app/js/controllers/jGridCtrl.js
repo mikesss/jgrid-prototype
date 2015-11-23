@@ -26,12 +26,30 @@
             vm.y = y;
         }
 
+        var G = function(x, y) {
+            return vm.gridValues[x][y];
+        }
+
+        var promiseResolve = function(x, y) {
+            return function(v) {
+                console.log(x, y);
+                vm.gridValues[x][y] = v;
+                $scope.$apply();
+            }
+        }
+
         $scope.$watch('vm.gridScripts', function() {
             for(var i = 0; i < vm.gridScripts.length; i++) {
                 for(var j = 0; j < vm.gridScripts[i].length; j++) {
-                    var f = new Function(vm.gridScripts[i][j]);
-                    console.log(f());
-                    vm.gridValues[j][i] = f();
+                    var f   = new Function('G', 'f', vm.gridScripts[i][j]);
+                    var val = f(G, fetch);
+                    if(val instanceof Promise) {
+                        val.then(promiseResolve(j, i)).catch(function(e) {
+                            console.error(e);
+                        });
+                    } else {
+                        vm.gridValues[j][i] = val;
+                    }
                 }
             }
         }, true);
