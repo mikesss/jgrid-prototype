@@ -20,6 +20,11 @@
         vm.gridValues   = initArray();
         vm.x            = 0;
         vm.y            = 0;
+        
+        var savedScripts = window.localStorage.getItem('sheet1');
+        if (savedScripts !== null) {
+            vm.gridScripts = JSON.parse(savedScripts);
+        }
 
         vm.selectGrid = function(x, y) {
             vm.x = x;
@@ -52,6 +57,10 @@
                     }
                 }
             }
+        }, true);
+
+        $scope.$watch('vm.gridScripts', function() {
+            window.localStorage.setItem('sheet1', JSON.stringify(vm.gridScripts));
         }, true);
     }
 
