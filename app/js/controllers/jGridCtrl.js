@@ -4,6 +4,8 @@
     function JGridCtrl($scope, SheetDataService) {
         var vm              = this;
 
+        SheetDataService.loadFromLocalStorage();
+
         vm.gridX            = new Array(10);
         vm.gridY            = new Array(10);
         vm.x                = 0;
@@ -23,17 +25,8 @@
         $scope.$watch('vm.selectedScript', function() {
             SheetDataService.setScript(vm.x, vm.y, vm.selectedScript);
             SheetDataService.computeValues();
+            SheetDataService.saveToLocalStorage();
         });
-/*
-        var savedScripts = window.localStorage.getItem('sheet1');
-        if (savedScripts !== null) {
-            vm.gridScripts = JSON.parse(savedScripts);
-        }
-
-        $scope.$watch('vm.gridScripts', function() {
-            window.localStorage.setItem('sheet1', JSON.stringify(vm.gridScripts));
-        }, true);
-*/
     }
 
     angular

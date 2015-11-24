@@ -21,7 +21,7 @@
                     this.map[x][y] = { src: script };
                 }
 
-                if(!(y in this.map)) {
+                if(!(y in this.map[x])) {
                     this.map[x][y] = { src: script };
                 } else {
                     this.map[x][y].src = script;
@@ -107,6 +107,18 @@
                         }
                     });
                 });
+            },
+
+            saveToLocalStorage: function() {
+                window.localStorage.setItem('sheet1', JSON.stringify(data.map));
+            },
+
+            loadFromLocalStorage: function() {
+                var savedMap = window.localStorage.getItem('sheet1');
+                if (savedMap !== null) {
+                    console.log(savedMap);
+                    data.map = JSON.parse(savedMap);
+                }
             }
         };
     }

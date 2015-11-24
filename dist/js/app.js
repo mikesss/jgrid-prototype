@@ -18,6 +18,8 @@
     function JGridCtrl($scope, SheetDataService) {
         var vm              = this;
 
+        SheetDataService.loadFromLocalStorage();
+
         vm.gridX            = new Array(10);
         vm.gridY            = new Array(10);
         vm.x                = 0;
@@ -37,17 +39,8 @@
         $scope.$watch('vm.selectedScript', function() {
             SheetDataService.setScript(vm.x, vm.y, vm.selectedScript);
             SheetDataService.computeValues();
+            SheetDataService.saveToLocalStorage();
         });
-/*
-        var savedScripts = window.localStorage.getItem('sheet1');
-        if (savedScripts !== null) {
-            vm.gridScripts = JSON.parse(savedScripts);
-        }
-
-        $scope.$watch('vm.gridScripts', function() {
-            window.localStorage.setItem('sheet1', JSON.stringify(vm.gridScripts));
-        }, true);
-*/
     }
 
     angular
@@ -130,7 +123,7 @@
                     this.map[x][y] = { src: script };
                 }
 
-                if(!(y in this.map)) {
+                if(!(y in this.map[x])) {
                     this.map[x][y] = { src: script };
                 } else {
                     this.map[x][y].src = script;
@@ -216,6 +209,18 @@
                         }
                     });
                 });
+            },
+
+            saveToLocalStorage: function() {
+                window.localStorage.setItem('sheet1', JSON.stringify(data.map));
+            },
+
+            loadFromLocalStorage: function() {
+                var savedMap = window.localStorage.getItem('sheet1');
+                if (savedMap !== null) {
+                    console.log(savedMap);
+                    data.map = JSON.parse(savedMap);
+                }
             }
         };
     }
