@@ -1,109 +1,53 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function() {
-require('angular/angular');
+    
+    require('angular/angular');
 
     angular
         .module('jGrid', []);
 
-require('./controllers/jGridCtrl');
+    require('./services/GridSelectorService');
+    require('./services/SheetDataService');
+    require('./controllers/jGridCtrl');
+
 })();
-},{"./controllers/jGridCtrl":2,"angular/angular":3}],2:[function(require,module,exports){
+},{"./controllers/jGridCtrl":2,"./services/GridSelectorService":3,"./services/SheetDataService":4,"angular/angular":5}],2:[function(require,module,exports){
 (function() {
     require('angular/angular');
 
-    function JGridCtrl($scope) {
-        var vm          = this;
-        var initArray   = function() {
-            var arr = new Array(vm.gridY);
-            for(var i = 0; i < vm.gridY; i++) {
-                arr[i] = new Array(vm.gridX);
-                for(var j = 0; j < vm.gridX; j++) {
-                    arr[i][j] = null;
-                }
-            }
+    function JGridCtrl($scope, SheetDataService) {
+        var vm              = this;
 
-            return arr;
+        vm.gridX            = new Array(10);
+        vm.gridY            = new Array(10);
+        vm.x                = 0;
+        vm.y                = 0;
+        vm.selectedScript   = SheetDataService.getScript(0, 0);
+
+        vm.selectGrid = function(x, y) {
+            vm.x = x;
+            vm.y = y;
+            vm.selectedScript = SheetDataService.getScript(x, y);
         };
 
-        vm.gridX        = 10;
-        vm.gridY        = 10;
-        vm.gridScripts  = initArray();
-        vm.gridValues   = initArray();
-        vm.x            = 0;
-        vm.y            = 0;
-        
+        vm.getValue = function(x, y) {
+            return SheetDataService.getValue(x, y);
+        };
+
+        $scope.$watch('vm.selectedScript', function() {
+            SheetDataService.setScript(vm.x, vm.y, vm.selectedScript);
+            SheetDataService.computeValues();
+        });
+/*
         var savedScripts = window.localStorage.getItem('sheet1');
         if (savedScripts !== null) {
             vm.gridScripts = JSON.parse(savedScripts);
         }
 
-        vm.selectGrid = function(x, y) {
-            vm.x = x;
-            vm.y = y;
-        }
-
-        var G = function(x, y) {
-            return vm.gridValues[x][y];
-        }
-
-        var _columnLetterToIndex = function (letter) {
-            return letter.codePointAt(0) - 65;
-        }
-
-        var R = function (selector) {
-            if (typeof selector !== 'string' || selector.indexOf(':') === -1) {
-                console.error('bad selector syntax');
-                return [];
-            }
-
-            // TODO: Allow different types of separators
-            var selectorPieces = selector.split(':');
-
-            // TODO: Allow more than two cell references in a selector
-            if (selectorPieces.length !== 2) {
-                console.error('bad selector syntax');
-                return [];
-            }
-
-            var selectorStart = selectorPieces[0];
-            var selectorEnd = selectorPieces[1];
-
-            // TODO: Allow referencing different columns for start and end part of range
-            var column = _columnLetterToIndex(selectorStart[0]);
-
-            var rowstart = Number.parseInt(selectorStart.slice(1));
-            var rowend = Number.parseInt(selectorEnd.slice(1));
-
-            return vm.gridValues[column].slice(rowstart, rowend + 1);
-        }
-
-        var promiseResolve = function(x, y) {
-            return function(v) {
-                console.log(x, y);
-                vm.gridValues[x][y] = v;
-                $scope.$apply();
-            }
-        }
-
-        $scope.$watch('vm.gridScripts', function() {
-            for(var i = 0; i < vm.gridScripts.length; i++) {
-                for(var j = 0; j < vm.gridScripts[i].length; j++) {
-                    var f   = new Function('G', 'R', vm.gridScripts[i][j]);
-                    var val = f(G, R);
-                    if(val instanceof Promise) {
-                        val.then(promiseResolve(j, i)).catch(function(e) {
-                            console.error(e);
-                        });
-                    } else {
-                        vm.gridValues[j][i] = val;
-                    }
-                }
-            }
-        }, true);
-
         $scope.$watch('vm.gridScripts', function() {
             window.localStorage.setItem('sheet1', JSON.stringify(vm.gridScripts));
         }, true);
+*/
     }
 
     angular
@@ -111,7 +55,177 @@ require('./controllers/jGridCtrl');
         .controller('JGridCtrl', JGridCtrl);
 
 })();
-},{"angular/angular":3}],3:[function(require,module,exports){
+},{"angular/angular":5}],3:[function(require,module,exports){
+(function() {
+    require('angular/angular');
+
+    function GridSelectorService() {
+        var columnLetterToIndex = (letter) => {
+            return letter.codePointAt(0) - 65;
+        };
+
+        return {
+            /*
+             * { count: n, rowStart: n, rowEnd: n, col: n } ??????
+             */
+            toCoordSet: function(sel) {
+                if (typeof selector !== 'string' || selector.indexOf(':') === -1) {
+                    console.error('bad selector syntax');
+                    return { count: 0 };
+                }
+
+                // TODO: Allow different types of separators
+                var selectorPieces = selector.split(':');
+
+                // TODO: Allow more than two cell references in a selector
+                if (selectorPieces.length !== 2) {
+                    console.error('bad selector syntax');
+                    return { count: 0 };
+                }
+
+                var selectorStart = selectorPieces[0];
+                var selectorEnd = selectorPieces[1];
+
+                // TODO: Allow referencing different columns for start and end part of range
+                var column = _columnLetterToIndex(selectorStart[0]);
+
+                var rowstart = Number.parseInt(selectorStart.slice(1));
+                var rowend = Number.parseInt(selectorEnd.slice(1));
+
+                return { count: rowend - rowstart + 1, rowStart: rowstart, rowEnd: rowend, col: column };
+            },
+
+            toSel: (coords) => {
+
+            }
+        };
+    }
+
+    angular
+        .module('jGrid')
+        .factory('GridSelectorService', GridSelectorService);
+
+})();
+},{"angular/angular":5}],4:[function(require,module,exports){
+(function() {
+    require('angular/angular');
+
+    function SheetDataService(GridSelectorService) {
+        var data = {
+            map: {},
+
+            getScript: function(x, y) { 
+                if(x in this.map) {
+                    if(y in this.map[x]) {
+                        return this.map[x][y].src;
+                    }
+                }
+
+                return null;
+            },
+
+            setScript: function(x, y, script) { 
+                if(!(x in this.map)) {
+                    this.map[x] = {};
+                    this.map[x][y] = { src: script };
+                }
+
+                if(!(y in this.map)) {
+                    this.map[x][y] = { src: script };
+                } else {
+                    this.map[x][y].src = script;
+                }
+            },
+
+            getValue: function(x, y) {
+                if(x in this.map) {
+                    if(y in this.map[x]) {
+                        return this.map[x][y].val;
+                    }
+                }
+
+                return null;
+            },
+        };
+
+        return  {
+            getScript: function(x, y) {
+                return data.getScript(x, y);
+            },
+
+            getScriptBySel: function(sel) {
+                var coordSet = GridSelectorService.toCoordSet(sel);
+                if(coordSet.count == 1) {
+                    var x = coordSet.col,
+                        y = coordSet.rowStart;
+
+                    return data.getScript(x, y);
+                } else if(coordSet.count > 1) {
+
+                }
+            },
+
+            getValue: function(x, y) {
+                return data.getValue(x, y);
+            },
+
+            getValueBySel: function(sel) {
+                var coordSet = GridSelectorService.toCoordSet(sel);
+                if(coordSet.count == 1) {
+                    var x = coordSet.col,
+                        y = coordSet.rowStart;
+
+                    return data.getValue(x, y);
+                } else if(coordSet.count > 1) {
+                    var vals = [];
+                    for(var i = coordSet.rowStart; i <= coordSet.rowEnd; i++) {
+                        vals.push(data.getValue(coordSet.col, i));
+                    }
+
+                    return vals;
+                }
+            },
+
+            setScript: function(x, y, script) {
+                data.setScript(x, y, script);
+            },
+
+            setScriptBySel: function(sel, script) {
+                var coordSet = GridSelectorService.toCoordSet(sel);
+                if(coordSet.count == 1) {
+                    var x = coordSet.col,
+                        y = coordSet.rowStart;
+
+                    return data.setScript(x, y, script);
+                }
+
+            },
+
+            computeValues: function() {
+                var that = this;
+
+                angular.forEach(data.map, function(x) {
+                    angular.forEach(x, function(y) {
+                        var f   = new Function('G', 'R', y.src);
+                        var val = f(that.getValue, that.getValueBySel);
+
+                        if(val instanceof Promise) {
+                            val.then((v) => y.val = v).catch((e) => console.error(e));
+                        } else {
+                            y.val = val;
+                        }
+                    });
+                });
+            }
+        };
+    }
+
+    angular
+        .module('jGrid')
+        .factory('SheetDataService', SheetDataService);
+
+})();
+},{"angular/angular":5}],5:[function(require,module,exports){
 /**
  * @license AngularJS v1.4.8
  * (c) 2010-2015 Google, Inc. http://angularjs.org

@@ -36,16 +36,16 @@
 <body ng-app="jGrid">
     <div ng-controller="JGridCtrl as vm">
         <div id="values">
-            <div ng-repeat="row in vm.gridValues track by $index">
+            <div ng-repeat="y in vm.gridY track by $index">
                 <span class="grid"
                       ng-click="vm.selectGrid($index, $parent.$index)"
                       ng-class="{true: 'selected'}[vm.y == $parent.$index && vm.x == $index]" 
-                      ng-repeat="col in row track by $index">{{ col }}</span>
+                      ng-repeat="x in vm.gridX track by $index">{{ vm.getValue($index, $parent.$index) }}</span>
             </div>
         </div>
 
         <div id="codeBox">
-            <textarea ng-model="vm.gridScripts[vm.x][vm.y]"></textarea>
+            <textarea ng-model="vm.selectedScript"></textarea>
         </div>
     </div>
 

@@ -1,8 +1,12 @@
 (function() {
-require('angular/angular');
+    
+    require('angular/angular');
 
     angular
         .module('jGrid', []);
 
-require('./controllers/jGridCtrl');
+    require('./services/GridSelectorService');
+    require('./services/SheetDataService');
+    require('./controllers/jGridCtrl');
+
 })();
