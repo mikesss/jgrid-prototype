@@ -66,7 +66,7 @@
                 var areas   = sel.split(',');
 
                 for(var i = 0; i < areas.length; i++) {
-                    var range   = sel.split(':');
+                    var range   = areas[i].trim().split(':');
                     var start   = range[0];
                     var end     = range[1];
 
