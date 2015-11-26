@@ -83,6 +83,10 @@
                             end     : columnLetterToIndex(end),
                         });
                     } else if(start.match(/^\w\d$/)) {
+                        if(!end) {
+                            end = start;
+                        }
+                        
                         var x1 = columnLetterToIndex(start[0]);
                         var y1 = Number(start[1]) - 1;
                         var x2 = columnLetterToIndex(end[0]);
