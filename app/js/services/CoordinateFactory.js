@@ -2,7 +2,11 @@
     require('angular/angular');
 
     function CoordinateSetFactory() {
-        var CoordinateSet = () => {
+        var CoordinateSet = function() {
+
+        };
+
+        CoordinateSet.getType = function() {
 
         };
 
