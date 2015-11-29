@@ -1,6 +1,7 @@
 (function() {
     
     require('angular/angular');
+    require('http');
 
     angular
         .module('jGrid', []);

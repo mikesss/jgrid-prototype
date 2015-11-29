@@ -1,6 +1,8 @@
 (function() {
     require('angular/angular');
+    var http = require('http');
 
+    console.log(http);
     function SheetDataService(GridSelectorService) {
         var map = {},
 
@@ -128,8 +130,8 @@
 
                 angular.forEach(map, function(x) {
                     angular.forEach(x, function(y) {
-                        var f   = new Function('G', 'R', y.src);
-                        var val = f(that.getValue, that.getValueBySel);
+                        var f   = new Function('G', 'R', 'http', y.src);
+                        var val = f(that.getValue, that.getValueBySel, http);
 
                         if(val instanceof Promise) {
                             val.then((v) => y.val = v).catch((e) => console.error(e));
