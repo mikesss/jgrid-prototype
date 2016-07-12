@@ -22,6 +22,10 @@
             return SheetDataService.getValue(x, y);
         };
 
+        vm.getError = function(x, y) {
+            return SheetDataService.getError(x, y);
+        }
+
         $scope.$watch('vm.selectedScript', function() {
             SheetDataService.setScript(vm.x, vm.y, vm.selectedScript);
             SheetDataService.computeValues();

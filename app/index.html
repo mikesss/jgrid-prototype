@@ -13,6 +13,10 @@
             background-color: yellow;
         }
 
+        td.has-error {
+            background-color: red;
+        }
+
         #right-bar {
             background-color: #333333;
             padding: 20px;
@@ -63,7 +67,7 @@
                             <td class="first-col">{{ $index + 1 }}</td>
                             <td
                                   ng-click="vm.selectGrid($index, $parent.$index)"
-                                  ng-class="{true: 'selected'}[vm.y == $parent.$index && vm.x == $index]" 
+                                  ng-class="{ 'selected': (vm.y == $parent.$index && vm.x == $index), 'has-error': vm.getError($index, $parent.$index) }"
                                   ng-repeat="x in vm.gridX track by $index">{{ vm.getValue($index, $parent.$index) }}</td>
                         </tr>
                     </tbody>
@@ -78,6 +82,8 @@
                     <pre>function(G, R, http) {</pre>
                     <div id="editor" ui-ace="{ mode: 'javascript', theme: 'monokai' }" ng-model="vm.selectedScript"></div>
                     <pre>}</pre>
+
+                    <pre ng-if="vm.getError(vm.x, vm.y)">{{ vm.getError(vm.x, vm.y).message }}</pre>
                 </div>
 
             </div>

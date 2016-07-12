@@ -38,6 +38,16 @@
                 return null;
             },
 
+            getError = function(x, y) {
+                if(x in map) {
+                    if(y in map[x]) {
+                        return map[x][y].error;
+                    }
+                }
+
+                return null;
+            },
+
             mapFromCoordSet = function(set, f) {
                 console.log(map);
                 var results = [];
@@ -109,6 +119,10 @@
                 return mapValuesFromCoordSet(coordSet);
             },
 
+            getError: function(x, y) {
+                return getError(x, y);
+            },
+
             setScript: function(x, y, script) {
                 setScript(x, y, script);
             },
@@ -129,13 +143,19 @@
 
                 angular.forEach(map, function(x) {
                     angular.forEach(x, function(y) {
-                        var f   = new Function('G', 'R', 'http', y.src);
-                        var val = f(that.getValue, that.getValueBySel, http);
+                        try {
+                            var f   = new Function('G', 'R', 'http', y.src);
+                            var val = f(that.getValue, that.getValueBySel, http);
 
-                        if(val instanceof Promise) {
-                            val.then((v) => y.val = v).catch((e) => console.error(e));
-                        } else {
-                            y.val = val;
+                            if(val instanceof Promise) {
+                                val.then((v) => y.val = v).catch((e) => console.error(e));
+                            } else {
+                                y.val = val;
+                                y.error = null;
+                            }
+                        } catch(e) {
+                            y.val = null;
+                            y.error = e;
                         }
                     });
                 });
