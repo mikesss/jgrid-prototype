@@ -17,6 +17,7 @@
             background-color: #333333;
             padding: 20px;
             color: white;
+            height: 100%;
         }
 
         textarea {
@@ -29,11 +30,21 @@
             width: 100%;
             height: 300px;
         }
+
+        #container {
+            height: 100%;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+        }
     </style>
 </head>
 <body ng-app="jGrid">
     <div ng-controller="JGridCtrl as vm">
-        <div class="pure-g">
+        <div class="pure-g" id="container">
             <div class="pure-u-15-24" id="grid">
 
                 <table class="pure-table pure-table-bordered">
@@ -55,7 +66,7 @@
                 </table>
 
             </div>
-            <div class="pure-u-9-24">
+            <div class="sidebar pure-u-9-24">
 
                 <div id="right-bar">
                     <h1>jGrid</h1>
