@@ -3,17 +3,18 @@
     
     require('angular/angular');
     require('http');
+    require('./vendor/ui-ace/ui-ace')
 
     angular
-        .module('jGrid', []);
+        .module('jGrid', ['ui.ace']);
 
     require('./services/GridSelectorService');
     require('./services/SheetDataService');
-    require('./filters/IndexToHeader.js');
+    require('./filters/IndexToHeader');
     require('./controllers/jGridCtrl');
 
 })();
-},{"./controllers/jGridCtrl":2,"./filters/IndexToHeader.js":3,"./services/GridSelectorService":4,"./services/SheetDataService":5,"angular/angular":6,"http":35}],2:[function(require,module,exports){
+},{"./controllers/jGridCtrl":2,"./filters/IndexToHeader":3,"./services/GridSelectorService":4,"./services/SheetDataService":5,"./vendor/ui-ace/ui-ace":6,"angular/angular":7,"http":36}],2:[function(require,module,exports){
 (function() {
     require('angular/angular');
 
@@ -50,7 +51,7 @@
         .controller('JGridCtrl', JGridCtrl);
 
 })();
-},{"angular/angular":6}],3:[function(require,module,exports){
+},{"angular/angular":7}],3:[function(require,module,exports){
 (function() {
 	
 	function IndexToHeader() {
@@ -131,7 +132,7 @@
         .factory('GridSelectorService', GridSelectorService);
 
 })();
-},{"angular/angular":6}],5:[function(require,module,exports){
+},{"angular/angular":7}],5:[function(require,module,exports){
 (function() {
     require('angular/angular');
     var http = require('http');
@@ -294,7 +295,337 @@
         .factory('SheetDataService', SheetDataService);
 
 })();
-},{"angular/angular":6,"http":35}],6:[function(require,module,exports){
+},{"angular/angular":7,"http":36}],6:[function(require,module,exports){
+'use strict';
+
+/**
+ * Binds a ACE Editor widget
+ */
+angular.module('ui.ace', [])
+  .constant('uiAceConfig', {})
+  .directive('uiAce', ['uiAceConfig', function (uiAceConfig) {
+
+    if (angular.isUndefined(window.ace)) {
+      throw new Error('ui-ace need ace to work... (o rly?)');
+    }
+
+    /**
+     * Sets editor options such as the wrapping mode or the syntax checker.
+     *
+     * The supported options are:
+     *
+     *   <ul>
+     *     <li>showGutter</li>
+     *     <li>useWrapMode</li>
+     *     <li>onLoad</li>
+     *     <li>theme</li>
+     *     <li>mode</li>
+     *   </ul>
+     *
+     * @param acee
+     * @param session ACE editor session
+     * @param {object} opts Options to be set
+     */
+    var setOptions = function(acee, session, opts) {
+
+      // sets the ace worker path, if running from concatenated
+      // or minified source
+      if (angular.isDefined(opts.workerPath)) {
+        var config = window.ace.require('ace/config');
+        config.set('workerPath', opts.workerPath);
+      }
+      // ace requires loading
+      if (angular.isDefined(opts.require)) {
+        opts.require.forEach(function (n) {
+            window.ace.require(n);
+        });
+      }
+      // Boolean options
+      if (angular.isDefined(opts.showGutter)) {
+        acee.renderer.setShowGutter(opts.showGutter);
+      }
+      if (angular.isDefined(opts.useWrapMode)) {
+        session.setUseWrapMode(opts.useWrapMode);
+      }
+      if (angular.isDefined(opts.showInvisibles)) {
+        acee.renderer.setShowInvisibles(opts.showInvisibles);
+      }
+      if (angular.isDefined(opts.showIndentGuides)) {
+        acee.renderer.setDisplayIndentGuides(opts.showIndentGuides);
+      }
+      if (angular.isDefined(opts.useSoftTabs)) {
+        session.setUseSoftTabs(opts.useSoftTabs);
+      }
+      if (angular.isDefined(opts.showPrintMargin)) {
+        acee.setShowPrintMargin(opts.showPrintMargin);
+      }
+
+      // commands
+      if (angular.isDefined(opts.disableSearch) && opts.disableSearch) {
+        acee.commands.addCommands([
+          {
+            name: 'unfind',
+            bindKey: {
+              win: 'Ctrl-F',
+              mac: 'Command-F'
+            },
+            exec: function () {
+              return false;
+            },
+            readOnly: true
+          }
+        ]);
+      }
+
+      // Basic options
+      if (angular.isString(opts.theme)) {
+        acee.setTheme('ace/theme/' + opts.theme);
+      }
+      if (angular.isString(opts.mode)) {
+        session.setMode('ace/mode/' + opts.mode);
+      }
+      // Advanced options
+      if (angular.isDefined(opts.firstLineNumber)) {
+        if (angular.isNumber(opts.firstLineNumber)) {
+          session.setOption('firstLineNumber', opts.firstLineNumber);
+        } else if (angular.isFunction(opts.firstLineNumber)) {
+          session.setOption('firstLineNumber', opts.firstLineNumber());
+        }
+      }
+
+      // advanced options
+      var key, obj;
+      if (angular.isDefined(opts.advanced)) {
+          for (key in opts.advanced) {
+              // create a javascript object with the key and value
+              obj = { name: key, value: opts.advanced[key] };
+              // try to assign the option to the ace editor
+              acee.setOption(obj.name, obj.value);
+          }
+      }
+
+      // advanced options for the renderer
+      if (angular.isDefined(opts.rendererOptions)) {
+          for (key in opts.rendererOptions) {
+              // create a javascript object with the key and value
+              obj = { name: key, value: opts.rendererOptions[key] };
+              // try to assign the option to the ace editor
+              acee.renderer.setOption(obj.name, obj.value);
+          }
+      }
+
+      // onLoad callbacks
+      angular.forEach(opts.callbacks, function (cb) {
+        if (angular.isFunction(cb)) {
+          cb(acee);
+        }
+      });
+    };
+
+    return {
+      restrict: 'EA',
+      require: '?ngModel',
+      link: function (scope, elm, attrs, ngModel) {
+
+        /**
+         * Corresponds the uiAceConfig ACE configuration.
+         * @type object
+         */
+        var options = uiAceConfig.ace || {};
+
+        /**
+         * uiAceConfig merged with user options via json in attribute or data binding
+         * @type object
+         */
+        var opts = angular.extend({}, options, scope.$eval(attrs.uiAce));
+
+        /**
+         * ACE editor
+         * @type object
+         */
+        var acee = window.ace.edit(elm[0]);
+
+        /**
+         * ACE editor session.
+         * @type object
+         * @see [EditSession]{@link http://ace.c9.io/#nav=api&api=edit_session}
+         */
+        var session = acee.getSession();
+
+        /**
+         * Reference to a change listener created by the listener factory.
+         * @function
+         * @see listenerFactory.onChange
+         */
+        var onChangeListener;
+
+        /**
+         * Reference to a blur listener created by the listener factory.
+         * @function
+         * @see listenerFactory.onBlur
+         */
+        var onBlurListener;
+
+        /**
+         * Calls a callback by checking its existing. The argument list
+         * is variable and thus this function is relying on the arguments
+         * object.
+         * @throws {Error} If the callback isn't a function
+         */
+        var executeUserCallback = function () {
+
+          /**
+           * The callback function grabbed from the array-like arguments
+           * object. The first argument should always be the callback.
+           *
+           * @see [arguments]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions_and_function_scope/arguments}
+           * @type {*}
+           */
+          var callback = arguments[0];
+
+          /**
+           * Arguments to be passed to the callback. These are taken
+           * from the array-like arguments object. The first argument
+           * is stripped because that should be the callback function.
+           *
+           * @see [arguments]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions_and_function_scope/arguments}
+           * @type {Array}
+           */
+          var args = Array.prototype.slice.call(arguments, 1);
+
+          if (angular.isDefined(callback)) {
+            scope.$evalAsync(function () {
+              if (angular.isFunction(callback)) {
+                callback(args);
+              } else {
+                throw new Error('ui-ace use a function as callback.');
+              }
+            });
+          }
+        };
+
+        /**
+         * Listener factory. Until now only change listeners can be created.
+         * @type object
+         */
+        var listenerFactory = {
+          /**
+           * Creates a change listener which propagates the change event
+           * and the editor session to the callback from the user option
+           * onChange. It might be exchanged during runtime, if this
+           * happens the old listener will be unbound.
+           *
+           * @param callback callback function defined in the user options
+           * @see onChangeListener
+           */
+          onChange: function (callback) {
+            return function (e) {
+              var newValue = session.getValue();
+
+              if (ngModel && newValue !== ngModel.$viewValue &&
+                  // HACK make sure to only trigger the apply outside of the
+                  // digest loop 'cause ACE is actually using this callback
+                  // for any text transformation !
+                  !scope.$$phase && !scope.$root.$$phase) {
+                scope.$evalAsync(function () {
+                  ngModel.$setViewValue(newValue);
+                });
+              }
+
+              executeUserCallback(callback, e, acee);
+            };
+          },
+          /**
+           * Creates a blur listener which propagates the editor session
+           * to the callback from the user option onBlur. It might be
+           * exchanged during runtime, if this happens the old listener
+           * will be unbound.
+           *
+           * @param callback callback function defined in the user options
+           * @see onBlurListener
+           */
+          onBlur: function (callback) {
+            return function () {
+              executeUserCallback(callback, acee);
+            };
+          }
+        };
+
+        attrs.$observe('readonly', function (value) {
+          acee.setReadOnly(!!value || value === '');
+        });
+
+        // Value Blind
+        if (ngModel) {
+          ngModel.$formatters.push(function (value) {
+            if (angular.isUndefined(value) || value === null) {
+              return '';
+            }
+            else if (angular.isObject(value) || angular.isArray(value)) {
+              throw new Error('ui-ace cannot use an object or an array as a model');
+            }
+            return value;
+          });
+
+          ngModel.$render = function () {
+            session.setValue(ngModel.$viewValue);
+          };
+        }
+
+        // Listen for option updates
+        var updateOptions = function (current, previous) {
+          if (current === previous) return;
+          opts = angular.extend({}, options, scope.$eval(attrs.uiAce));
+
+          opts.callbacks = [ opts.onLoad ];
+          if (opts.onLoad !== options.onLoad) {
+            // also call the global onLoad handler
+            opts.callbacks.unshift(options.onLoad);
+          }
+
+          // EVENTS
+
+          // unbind old change listener
+          session.removeListener('change', onChangeListener);
+
+          // bind new change listener
+          onChangeListener = listenerFactory.onChange(opts.onChange);
+          session.on('change', onChangeListener);
+
+          // unbind old blur listener
+          //session.removeListener('blur', onBlurListener);
+          acee.removeListener('blur', onBlurListener);
+
+          // bind new blur listener
+          onBlurListener = listenerFactory.onBlur(opts.onBlur);
+          acee.on('blur', onBlurListener);
+
+          setOptions(acee, session, opts);
+        };
+
+        scope.$watch(attrs.uiAce, updateOptions, /* deep watch */ true);
+
+        // set the options here, even if we try to watch later, if this
+        // line is missing things go wrong (and the tests will also fail)
+        updateOptions(options);
+
+        elm.on('$destroy', function () {
+          acee.session.$stopWorker();
+          acee.destroy();
+        });
+
+        scope.$watch(function() {
+          return [elm[0].offsetWidth, elm[0].offsetHeight];
+        }, function() {
+          acee.resize();
+          acee.renderer.updateFull();
+        }, true);
+
+      }
+    };
+  }]);
+
+},{}],7:[function(require,module,exports){
 /**
  * @license AngularJS v1.4.8
  * (c) 2010-2015 Google, Inc. http://angularjs.org
@@ -29313,9 +29644,9 @@ $provide.value("$locale", {
 })(window, document);
 
 !window.angular.$$csp().noInlineStyle && window.angular.element(document.head).prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}ng\\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:absolute;}</style>');
-},{}],7:[function(require,module,exports){
-
 },{}],8:[function(require,module,exports){
+
+},{}],9:[function(require,module,exports){
 (function (global){
 /*!
  * The buffer module from node.js, for the browser.
@@ -30863,7 +31194,7 @@ function blitBuffer (src, dst, offset, length) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"base64-js":9,"ieee754":10,"is-array":11}],9:[function(require,module,exports){
+},{"base64-js":10,"ieee754":11,"is-array":12}],10:[function(require,module,exports){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 ;(function (exports) {
@@ -30989,7 +31320,7 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 	exports.fromByteArray = uint8ToBase64
 }(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = nBytes * 8 - mLen - 1
@@ -31075,7 +31406,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 
 /**
  * isArray
@@ -31110,7 +31441,7 @@ module.exports = isArray || function (val) {
   return !! val && '[object Array]' == str.call(val);
 };
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -31413,7 +31744,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -31438,7 +31769,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 /**
  * Determine if an object is Buffer
  *
@@ -31457,12 +31788,12 @@ module.exports = function (obj) {
     ))
 }
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 module.exports = Array.isArray || function (arr) {
   return Object.prototype.toString.call(arr) == '[object Array]';
 };
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -31555,7 +31886,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 (function (global){
 /*! https://mths.be/punycode v1.3.2 by @mathias */
 ;(function(root) {
@@ -32089,7 +32420,7 @@ process.umask = function() { return 0; };
 }(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -32175,7 +32506,7 @@ var isArray = Array.isArray || function (xs) {
   return Object.prototype.toString.call(xs) === '[object Array]';
 };
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -32262,16 +32593,16 @@ var objectKeys = Object.keys || function (obj) {
   return res;
 };
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 'use strict';
 
 exports.decode = exports.parse = require('./decode');
 exports.encode = exports.stringify = require('./encode');
 
-},{"./decode":18,"./encode":19}],21:[function(require,module,exports){
+},{"./decode":19,"./encode":20}],22:[function(require,module,exports){
 module.exports = require("./lib/_stream_duplex.js")
 
-},{"./lib/_stream_duplex.js":22}],22:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":23}],23:[function(require,module,exports){
 // a duplex stream is just a stream that is both readable and writable.
 // Since JS doesn't have multiple prototypal inheritance, this class
 // prototypally inherits from Readable, and then parasitically from
@@ -32355,7 +32686,7 @@ function forEach (xs, f) {
   }
 }
 
-},{"./_stream_readable":24,"./_stream_writable":26,"core-util-is":27,"inherits":13,"process-nextick-args":28}],23:[function(require,module,exports){
+},{"./_stream_readable":25,"./_stream_writable":27,"core-util-is":28,"inherits":14,"process-nextick-args":29}],24:[function(require,module,exports){
 // a passthrough stream.
 // basically just the most minimal sort of Transform stream.
 // Every written chunk gets output as-is.
@@ -32384,7 +32715,7 @@ PassThrough.prototype._transform = function(chunk, encoding, cb) {
   cb(null, chunk);
 };
 
-},{"./_stream_transform":25,"core-util-is":27,"inherits":13}],24:[function(require,module,exports){
+},{"./_stream_transform":26,"core-util-is":28,"inherits":14}],25:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -33361,7 +33692,7 @@ function indexOf (xs, x) {
 }
 
 }).call(this,require('_process'))
-},{"./_stream_duplex":22,"_process":16,"buffer":8,"core-util-is":27,"events":12,"inherits":13,"isarray":15,"process-nextick-args":28,"string_decoder/":44,"util":7}],25:[function(require,module,exports){
+},{"./_stream_duplex":23,"_process":17,"buffer":9,"core-util-is":28,"events":13,"inherits":14,"isarray":16,"process-nextick-args":29,"string_decoder/":45,"util":8}],26:[function(require,module,exports){
 // a transform stream is a readable/writable stream where you do
 // something with the data.  Sometimes it's called a "filter",
 // but that's not a great name for it, since that implies a thing where
@@ -33560,7 +33891,7 @@ function done(stream, er) {
   return stream.push(null);
 }
 
-},{"./_stream_duplex":22,"core-util-is":27,"inherits":13}],26:[function(require,module,exports){
+},{"./_stream_duplex":23,"core-util-is":28,"inherits":14}],27:[function(require,module,exports){
 // A bit simpler than readable streams.
 // Implement an async ._write(chunk, encoding, cb), and it'll handle all
 // the drain event emission and buffering.
@@ -34089,7 +34420,7 @@ function endWritable(stream, state, cb) {
   state.ended = true;
 }
 
-},{"./_stream_duplex":22,"buffer":8,"core-util-is":27,"events":12,"inherits":13,"process-nextick-args":28,"util-deprecate":29}],27:[function(require,module,exports){
+},{"./_stream_duplex":23,"buffer":9,"core-util-is":28,"events":13,"inherits":14,"process-nextick-args":29,"util-deprecate":30}],28:[function(require,module,exports){
 (function (Buffer){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -34200,7 +34531,7 @@ function objectToString(o) {
 }
 
 }).call(this,{"isBuffer":require("../../../../insert-module-globals/node_modules/is-buffer/index.js")})
-},{"../../../../insert-module-globals/node_modules/is-buffer/index.js":14}],28:[function(require,module,exports){
+},{"../../../../insert-module-globals/node_modules/is-buffer/index.js":15}],29:[function(require,module,exports){
 (function (process){
 'use strict';
 module.exports = nextTick;
@@ -34217,7 +34548,7 @@ function nextTick(fn) {
 }
 
 }).call(this,require('_process'))
-},{"_process":16}],29:[function(require,module,exports){
+},{"_process":17}],30:[function(require,module,exports){
 (function (global){
 
 /**
@@ -34288,10 +34619,10 @@ function config (name) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 module.exports = require("./lib/_stream_passthrough.js")
 
-},{"./lib/_stream_passthrough.js":23}],31:[function(require,module,exports){
+},{"./lib/_stream_passthrough.js":24}],32:[function(require,module,exports){
 var Stream = (function (){
   try {
     return require('st' + 'ream'); // hack to fix a circular dependency issue when used with browserify
@@ -34305,13 +34636,13 @@ exports.Duplex = require('./lib/_stream_duplex.js');
 exports.Transform = require('./lib/_stream_transform.js');
 exports.PassThrough = require('./lib/_stream_passthrough.js');
 
-},{"./lib/_stream_duplex.js":22,"./lib/_stream_passthrough.js":23,"./lib/_stream_readable.js":24,"./lib/_stream_transform.js":25,"./lib/_stream_writable.js":26}],32:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":23,"./lib/_stream_passthrough.js":24,"./lib/_stream_readable.js":25,"./lib/_stream_transform.js":26,"./lib/_stream_writable.js":27}],33:[function(require,module,exports){
 module.exports = require("./lib/_stream_transform.js")
 
-},{"./lib/_stream_transform.js":25}],33:[function(require,module,exports){
+},{"./lib/_stream_transform.js":26}],34:[function(require,module,exports){
 module.exports = require("./lib/_stream_writable.js")
 
-},{"./lib/_stream_writable.js":26}],34:[function(require,module,exports){
+},{"./lib/_stream_writable.js":27}],35:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -34440,7 +34771,7 @@ Stream.prototype.pipe = function(dest, options) {
   return dest;
 };
 
-},{"events":12,"inherits":13,"readable-stream/duplex.js":21,"readable-stream/passthrough.js":30,"readable-stream/readable.js":31,"readable-stream/transform.js":32,"readable-stream/writable.js":33}],35:[function(require,module,exports){
+},{"events":13,"inherits":14,"readable-stream/duplex.js":22,"readable-stream/passthrough.js":31,"readable-stream/readable.js":32,"readable-stream/transform.js":33,"readable-stream/writable.js":34}],36:[function(require,module,exports){
 var ClientRequest = require('./lib/request')
 var extend = require('xtend')
 var statusCodes = require('builtin-status-codes')
@@ -34515,7 +34846,7 @@ http.METHODS = [
 	'UNLOCK',
 	'UNSUBSCRIBE'
 ]
-},{"./lib/request":37,"builtin-status-codes":39,"url":45,"xtend":46}],36:[function(require,module,exports){
+},{"./lib/request":38,"builtin-status-codes":40,"url":46,"xtend":47}],37:[function(require,module,exports){
 (function (global){
 exports.fetch = isFunction(global.fetch) && isFunction(global.ReadableByteStream)
 
@@ -34559,7 +34890,7 @@ function isFunction (value) {
 xhr = null // Help gc
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 (function (process,global,Buffer){
 // var Base64 = require('Base64')
 var capability = require('./capability')
@@ -34841,7 +35172,7 @@ var unsafeHeaders = [
 ]
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
-},{"./capability":36,"./response":38,"_process":16,"buffer":8,"foreach":40,"indexof":41,"inherits":13,"object-keys":42,"stream":34}],38:[function(require,module,exports){
+},{"./capability":37,"./response":39,"_process":17,"buffer":9,"foreach":41,"indexof":42,"inherits":14,"object-keys":43,"stream":35}],39:[function(require,module,exports){
 (function (process,global,Buffer){
 var capability = require('./capability')
 var foreach = require('foreach')
@@ -35018,7 +35349,7 @@ IncomingMessage.prototype._onXHRProgress = function () {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
-},{"./capability":36,"_process":16,"buffer":8,"foreach":40,"inherits":13,"stream":34}],39:[function(require,module,exports){
+},{"./capability":37,"_process":17,"buffer":9,"foreach":41,"inherits":14,"stream":35}],40:[function(require,module,exports){
 module.exports = {
   "100": "Continue",
   "101": "Switching Protocols",
@@ -35079,7 +35410,7 @@ module.exports = {
   "511": "Network Authentication Required"
 }
 
-},{}],40:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 
 var hasOwn = Object.prototype.hasOwnProperty;
 var toString = Object.prototype.toString;
@@ -35103,7 +35434,7 @@ module.exports = function forEach (obj, fn, ctx) {
 };
 
 
-},{}],41:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 
 var indexOf = [].indexOf;
 
@@ -35114,7 +35445,7 @@ module.exports = function(arr, obj){
   }
   return -1;
 };
-},{}],42:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 'use strict';
 
 // modified from https://github.com/es-shims/es5-shim
@@ -35244,7 +35575,7 @@ keysShim.shim = function shimObjectKeys() {
 
 module.exports = keysShim;
 
-},{"./isArguments":43}],43:[function(require,module,exports){
+},{"./isArguments":44}],44:[function(require,module,exports){
 'use strict';
 
 var toStr = Object.prototype.toString;
@@ -35263,7 +35594,7 @@ module.exports = function isArguments(value) {
 	return isArgs;
 };
 
-},{}],44:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -35486,7 +35817,7 @@ function base64DetectIncompleteChar(buffer) {
   this.charLength = this.charReceived ? 3 : 0;
 }
 
-},{"buffer":8}],45:[function(require,module,exports){
+},{"buffer":9}],46:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -36195,7 +36526,7 @@ function isNullOrUndefined(arg) {
   return  arg == null;
 }
 
-},{"punycode":17,"querystring":20}],46:[function(require,module,exports){
+},{"punycode":18,"querystring":21}],47:[function(require,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
