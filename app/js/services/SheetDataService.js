@@ -2,7 +2,6 @@
     require('angular/angular');
     var http = require('http');
 
-    console.log(http);
     function SheetDataService(GridSelectorService) {
         var map = {},
 
