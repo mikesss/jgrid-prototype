@@ -298,6 +298,7 @@
                         }
                     });
                 });
+
             },
 
             saveToLocalStorage: function() {
