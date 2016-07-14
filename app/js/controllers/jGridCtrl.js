@@ -1,16 +1,18 @@
 (function() {
     require('angular/angular');
 
-    function JGridCtrl($scope, SheetDataService) {
+    function JGridCtrl($scope, $interval, SheetDataService) {
         var vm              = this;
 
         SheetDataService.loadFromLocalStorage();
 
-        vm.gridX            = new Array(10);
-        vm.gridY            = new Array(10);
-        vm.x                = 0;
-        vm.y                = 0;
-        vm.selectedScript   = SheetDataService.getScript(0, 0);
+        vm.gridX                = new Array(10);
+        vm.gridY                = new Array(10);
+        vm.x                    = 0;
+        vm.y                    = 0;
+        vm.selectedScript       = SheetDataService.getScript(0, 0);
+        vm.updateDelay          = 2000;
+        vm.activeUpdateCycle    = null;
 
         vm.selectGrid = function(x, y) {
             vm.x = x;
@@ -28,7 +30,25 @@
 
         $scope.$watch('vm.selectedScript', function() {
             SheetDataService.setScript(vm.x, vm.y, vm.selectedScript);
-            SheetDataService.computeValues();
+
+            // if there's a current update cycle, stop it
+            if(vm.activeUpdateCycle) {
+                $interval.cancel(vm.activeUpdateCycle);
+            }
+
+            // do an update right now, if it causes changes then start a cycle
+            if(SheetDataService.computeValues().hasChanged) {
+                vm.activeUpdateCycle = $interval(function() {
+                    if(!SheetDataService.computeValues().hasChanged) {
+                        // once nothing in the sheet has changed, kill the cycle
+                        $interval.cancel(vm.activeUpdateCycle);
+                        vm.activeUpdateCycle = null;
+                    }
+                    
+                    SheetDataService.saveToLocalStorage();
+                }, vm.updateDelay);
+            }
+
             SheetDataService.saveToLocalStorage();
         });
     }

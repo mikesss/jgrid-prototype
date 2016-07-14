@@ -139,26 +139,34 @@
             },
 
             computeValues: function() {
-                var that = this;
+                var that        = this,
+                    hasChanged  = false;
 
                 angular.forEach(map, function(x) {
                     angular.forEach(x, function(y) {
+                        // we catch and store any exceptions that occur
                         try {
-                            var f   = new Function('G', 'R', 'http', y.src);
-                            var val = f(that.getValue, that.getValueBySel, http);
+                            // create function for the cell and evaluate it
+                            var f       = new Function('G', 'R', 'http', y.src);
+                            var val     = f(that.getValue, that.getValueBySel, http);
+                            var error   = null;
 
                             if(val instanceof Promise) {
+                                // if the computed value is a promise (such as from http)
+                                // then we need to do something special here
                                 val.then((v) => y.val = v).catch((e) => console.error(e));
-                            } else {
-                                y.val = val;
-                                y.error = null;
                             }
                         } catch(e) {
-                            y.val = null;
-                            y.error = e;
+                            error = e;
+                            val = null;
                         }
+
+                        y.val = val;
+                        y.error = error;
                     });
                 });
+
+                return { hasChanged: hasChanged };
             },
 
             saveToLocalStorage: function() {

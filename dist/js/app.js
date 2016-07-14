@@ -18,16 +18,18 @@
 (function() {
     require('angular/angular');
 
-    function JGridCtrl($scope, SheetDataService) {
+    function JGridCtrl($scope, $interval, SheetDataService) {
         var vm              = this;
 
         SheetDataService.loadFromLocalStorage();
 
-        vm.gridX            = new Array(10);
-        vm.gridY            = new Array(10);
-        vm.x                = 0;
-        vm.y                = 0;
-        vm.selectedScript   = SheetDataService.getScript(0, 0);
+        vm.gridX                = new Array(10);
+        vm.gridY                = new Array(10);
+        vm.x                    = 0;
+        vm.y                    = 0;
+        vm.selectedScript       = SheetDataService.getScript(0, 0);
+        vm.updateDelay          = 2000;
+        vm.activeUpdateCycle    = null;
 
         vm.selectGrid = function(x, y) {
             vm.x = x;
@@ -45,7 +47,21 @@
 
         $scope.$watch('vm.selectedScript', function() {
             SheetDataService.setScript(vm.x, vm.y, vm.selectedScript);
-            SheetDataService.computeValues();
+
+            // if there's a current update cycle, stop it
+            if(vm.activeUpdateCycle) {
+                $interval.cancel(vm.activeUpdateCycle);
+            }
+
+            if(SheetDataService.computeValues().hasChanged) {
+                vm.activeUpdateCycle = $interval(function() {
+                    if(!SheetDataService.computeValues().hasChanged) {
+                        $interval.cancel(vm.activeUpdateCycle);
+                    }
+                    SheetDataService.saveToLocalStorage();
+                }, vm.updateDelay);
+            }
+            
             SheetDataService.saveToLocalStorage();
         });
     }
@@ -278,27 +294,34 @@
             },
 
             computeValues: function() {
-                var that = this;
+                var that        = this,
+                    hasChanged  = false;
 
                 angular.forEach(map, function(x) {
                     angular.forEach(x, function(y) {
+                        // we catch and store any exceptions that occur
                         try {
-                            var f   = new Function('G', 'R', 'http', y.src);
-                            var val = f(that.getValue, that.getValueBySel, http);
+                            // create function for the cell and evaluate it
+                            var f       = new Function('G', 'R', 'http', y.src);
+                            var val     = f(that.getValue, that.getValueBySel, http);
+                            var error   = null;
 
                             if(val instanceof Promise) {
+                                // if the computed value is a promise (such as from http)
+                                // then we need to do something special here
                                 val.then((v) => y.val = v).catch((e) => console.error(e));
-                            } else {
-                                y.val = val;
-                                y.error = null;
                             }
                         } catch(e) {
-                            y.val = null;
-                            y.error = e;
+                            error = e;
+                            val = null;
                         }
+
+                        y.val = val;
+                        y.error = error;
                     });
                 });
 
+                return { hasChanged: hasChanged };
             },
 
             saveToLocalStorage: function() {
