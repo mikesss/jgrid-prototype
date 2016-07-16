@@ -4,6 +4,7 @@
     <title>jGrid</title>
     <link rel="stylesheet" href="css/pure-min.css">
     <link rel="stylesheet" href="css/grids-responsive-min.css">
+    <link rel="stylesheet" href="../node_modules/angular-hotkeys/build/hotkeys.css">
     <style>
         td.first-col {
             background-color: #e0e0e0;
@@ -82,7 +83,7 @@
     </style>
 </head>
 <body ng-app="jGrid">
-    <div ng-controller="JGridCtrl as vm">
+    <div ng-controller="JGridCtrl as vm" ng-keypress="vm.handleKeypress($event)">
         <div class="pure-g" id="container">
             <div class="pure-u-15-24" id="grid">
 

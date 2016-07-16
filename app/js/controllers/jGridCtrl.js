@@ -1,7 +1,7 @@
 (function() {
     require('angular/angular');
 
-    function JGridCtrl($scope, $interval, SheetDataService) {
+    function JGridCtrl($scope, $interval, hotkeys, SheetDataService) {
         var vm              = this;
 
         SheetDataService.loadFromLocalStorage();
@@ -20,6 +20,22 @@
             vm.selectedScript = SheetDataService.getScript(x, y);
         };
 
+        vm.moveUp = function() {
+            vm.selectGrid(vm.x, Math.max(vm.y - 1, 0));
+        }
+
+        vm.moveDown = function() {
+            vm.selectGrid(vm.x, Math.min(vm.y + 1, vm.gridY.length - 1));
+        }
+
+        vm.moveLeft = function() {
+            vm.selectGrid(Math.max(vm.x - 1, 0), vm.y);
+        }
+
+        vm.moveRight = function() {
+            vm.selectGrid(Math.min(vm.x + 1, vm.gridX.length - 1), vm.y);
+        }
+
         vm.getValue = function(x, y) {
             return SheetDataService.getValue(x, y);
         };
@@ -27,6 +43,28 @@
         vm.getError = function(x, y) {
             return SheetDataService.getError(x, y);
         }
+
+        hotkeys.bindTo($scope)
+            .add({
+                combo: 'up',
+                description: 'Move one cell up',
+                callback: vm.moveUp
+            })
+            .add({
+                combo: 'down',
+                description: 'Move one cell down',
+                callback: vm.moveDown
+            })
+            .add({
+                combo: 'left',
+                description: 'Move one cell left',
+                callback: vm.moveLeft
+            })
+            .add({
+                combo: 'right',
+                description: 'Move one cell right',
+                callback: vm.moveRight
+            });
 
         $scope.$watch('vm.selectedScript', function() {
             SheetDataService.setScript(vm.x, vm.y, vm.selectedScript);
@@ -40,7 +78,6 @@
             if(SheetDataService.computeValues().hasChanged) {
                 vm.activeUpdateCycle = $interval(function() {
                     var hasChanged = SheetDataService.computeValues().hasChanged;
-                    console.log(hasChanged);
                     if(!hasChanged) {
                         // once nothing in the sheet has changed, kill the cycle
                         $interval.cancel(vm.activeUpdateCycle);

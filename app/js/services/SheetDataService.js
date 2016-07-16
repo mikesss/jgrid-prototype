@@ -49,7 +49,6 @@
             },
 
             mapFromCoordSet = function(set, f) {
-                console.log(map);
                 var results = [];
                 for(var i = 0; i < set.length; i++) {
 
@@ -75,7 +74,6 @@
                         for(var y = set[i].start.y; y <= set[i].end.y; y++) {
                             for(var x = set[i].start.x; x <= set[i].end.x; x++) {
                                 var r = f(x, y);
-                                console.log(x, y, r);
                                 if(r) {
                                     results.push(r);
                                 }
@@ -177,7 +175,6 @@
             loadFromLocalStorage: function() {
                 var savedMap = window.localStorage.getItem('sheet1');
                 if (savedMap !== null) {
-                    console.log(savedMap);
                     map = JSON.parse(savedMap);
                 }
             }
