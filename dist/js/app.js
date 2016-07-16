@@ -65,6 +65,7 @@
         };
 
         vm.aceLoaded = function(_editor) {
+            _editor.$blockScrolling = Infinity
             vm.aceEditor = _editor;
         };
 
