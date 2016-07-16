@@ -118,7 +118,7 @@
                     <h1>jGrid</h1>
 
                     <pre>function(G, R, http) {</pre>
-                    <div id="editor" ui-ace="{ mode: 'javascript', theme: 'monokai' }" ng-model="vm.selectedScript"></div>
+                    <div id="editor" ui-ace="{ mode: 'javascript', theme: 'monokai', onLoad: vm.aceLoaded }" ng-model="vm.selectedScript"></div>
                     <pre>}</pre>
 
                     <pre class="errors" ng-if="vm.getError(vm.x, vm.y)">{{ vm.getError(vm.x, vm.y).message }}</pre>

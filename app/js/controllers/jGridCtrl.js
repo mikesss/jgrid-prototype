@@ -13,6 +13,8 @@
         vm.selectedScript       = SheetDataService.getScript(0, 0);
         vm.updateDelay          = 100;
         vm.activeUpdateCycle    = null;
+        vm.aceEditor            = null;
+        vm.aceEditorIsFocused   = false;
 
         vm.selectGrid = function(x, y) {
             vm.x = x;
@@ -22,19 +24,19 @@
 
         vm.moveUp = function() {
             vm.selectGrid(vm.x, Math.max(vm.y - 1, 0));
-        }
+        };
 
         vm.moveDown = function() {
             vm.selectGrid(vm.x, Math.min(vm.y + 1, vm.gridY.length - 1));
-        }
+        };
 
         vm.moveLeft = function() {
             vm.selectGrid(Math.max(vm.x - 1, 0), vm.y);
-        }
+        };
 
         vm.moveRight = function() {
             vm.selectGrid(Math.min(vm.x + 1, vm.gridX.length - 1), vm.y);
-        }
+        };
 
         vm.getValue = function(x, y) {
             return SheetDataService.getValue(x, y);
@@ -42,7 +44,22 @@
 
         vm.getError = function(x, y) {
             return SheetDataService.getError(x, y);
-        }
+        };
+
+        vm.aceLoaded = function(_editor) {
+            vm.aceEditor = _editor;
+        };
+
+        vm.focusAceEditor = function(e) {
+            e.preventDefault(); // without this, the keypress gets entered into the editor
+            vm.aceEditor.focus();
+            vm.aceEditorIsFocused = true;
+        };
+
+        vm.blurAceEditor = function(e) {
+            vm.aceEditor.blur();
+            vm.aceEditorIsFocused = false;
+        };
 
         hotkeys.bindTo($scope)
             .add({
@@ -64,6 +81,17 @@
                 combo: 'right',
                 description: 'Move one cell right',
                 callback: vm.moveRight
+            })
+            .add({
+                combo: '=',
+                description: 'Edit script',
+                callback: vm.focusAceEditor
+            })
+            .add({
+                combo: 'esc',
+                description: 'Get outta there',
+                callback: vm.blurAceEditor,
+                allowIn: ['textarea']
             });
 
         $scope.$watch('vm.selectedScript', function() {
