@@ -52,6 +52,33 @@
         #jgrid-sheet {
             width: 100%;
         }
+
+        .pure-table td {
+            padding: 0px 0px;
+        }
+
+        .jgrid-cell {
+            border: 3px solid white;
+            background-color: #eeeeee;
+            min-height: 20px;
+            padding: 3px;
+        }
+
+        .jgrid-cell.selected {
+            border-color: #555555;
+        }
+
+        .jgrid-cell.has-error {
+            background-color: red;
+        }
+
+        pre.errors {
+            background-color: red;
+            color: white;
+            padding: 2px;
+            font-size: .8em;
+            border-radius: 3px;
+        }
     </style>
 </head>
 <body ng-app="jGrid">
@@ -63,16 +90,22 @@
                     <thead>
                         <tr>
                             <th></th>
-                            <th ng-repeat="y in vm.gridY track by $index">{{ $index + 1 | indexToHeader }}</th>
+                            <th ng-repeat="y in vm.gridY track by $index">
+                                {{ $index + 1 | indexToHeader }}
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr ng-repeat="y in vm.gridY track by $index">
                             <td class="first-col">{{ $index + 1 }}</td>
-                            <td
-                                  ng-click="vm.selectGrid($index, $parent.$index)"
-                                  ng-class="{ 'selected': (vm.y == $parent.$index && vm.x == $index), 'has-error': vm.getError($index, $parent.$index) }"
-                                  ng-repeat="x in vm.gridX track by $index">{{ vm.getValue($index, $parent.$index) }}</td>
+                            <td ng-click="vm.selectGrid($index, $parent.$index)"
+                                ng-repeat="x in vm.gridX track by $index">
+
+                                <div class="jgrid-cell"
+                                    ng-class="{ 'selected': (vm.y == $parent.$index && vm.x == $index), 'has-error': vm.getError($index, $parent.$index) }">
+                                    {{ vm.getValue($index, $parent.$index) }}
+                                </div>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -87,7 +120,7 @@
                     <div id="editor" ui-ace="{ mode: 'javascript', theme: 'monokai' }" ng-model="vm.selectedScript"></div>
                     <pre>}</pre>
 
-                    <pre ng-if="vm.getError(vm.x, vm.y)">{{ vm.getError(vm.x, vm.y).message }}</pre>
+                    <pre class="errors" ng-if="vm.getError(vm.x, vm.y)">{{ vm.getError(vm.x, vm.y).message }}</pre>
                 </div>
 
             </div>

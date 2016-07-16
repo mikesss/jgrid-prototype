@@ -161,6 +161,7 @@
                             val = null;
                         }
 
+                        hasChanged = hasChanged || !angular.equals(y.val, val) || !angular.equals(y.error, error);
                         y.val = val;
                         y.error = error;
                     });

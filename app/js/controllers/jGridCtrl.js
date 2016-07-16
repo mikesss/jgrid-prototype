@@ -11,7 +11,7 @@
         vm.x                    = 0;
         vm.y                    = 0;
         vm.selectedScript       = SheetDataService.getScript(0, 0);
-        vm.updateDelay          = 2000;
+        vm.updateDelay          = 100;
         vm.activeUpdateCycle    = null;
 
         vm.selectGrid = function(x, y) {
@@ -39,7 +39,9 @@
             // do an update right now, if it causes changes then start a cycle
             if(SheetDataService.computeValues().hasChanged) {
                 vm.activeUpdateCycle = $interval(function() {
-                    if(!SheetDataService.computeValues().hasChanged) {
+                    var hasChanged = SheetDataService.computeValues().hasChanged;
+                    console.log(hasChanged);
+                    if(!hasChanged) {
                         // once nothing in the sheet has changed, kill the cycle
                         $interval.cancel(vm.activeUpdateCycle);
                         vm.activeUpdateCycle = null;
