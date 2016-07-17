@@ -22,19 +22,23 @@
             vm.selectedScript = SheetDataService.getScript(x, y);
         };
 
-        vm.moveUp = function() {
+        vm.moveUp = function(e) {
+            e.preventDefault();
             vm.selectGrid(vm.x, Math.max(vm.y - 1, 0));
         };
 
-        vm.moveDown = function() {
+        vm.moveDown = function(e) {
+            e.preventDefault();
             vm.selectGrid(vm.x, Math.min(vm.y + 1, vm.gridY.length - 1));
         };
 
-        vm.moveLeft = function() {
+        vm.moveLeft = function(e) {
+            e.preventDefault();
             vm.selectGrid(Math.max(vm.x - 1, 0), vm.y);
         };
 
-        vm.moveRight = function() {
+        vm.moveRight = function(e) {
+            e.preventDefault();
             vm.selectGrid(Math.min(vm.x + 1, vm.gridX.length - 1), vm.y);
         };
 
@@ -75,12 +79,12 @@
                 callback: vm.moveDown
             })
             .add({
-                combo: 'left',
+                combo: ['left', 'shift+tab'],
                 description: 'Move one cell left',
                 callback: vm.moveLeft
             })
             .add({
-                combo: 'right',
+                combo: ['right', 'tab'],
                 description: 'Move one cell right',
                 callback: vm.moveRight
             })
