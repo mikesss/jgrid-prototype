@@ -33,7 +33,19 @@ textarea {
     height: 100%;
 }
 
-/* sidebar stuff */
+
+/*** EDIT MODE STUFF ***/
+
+.edit-mode {
+    position: relative;
+    z-index: 100;
+    -webkit-box-shadow: 4px 4px 10px 5px rgba(0,0,0,0.25);
+    -moz-box-shadow: 4px 4px 10px 5px rgba(0,0,0,0.25);
+    box-shadow: 4px 4px 10px 5px rgba(0,0,0,0.25);
+}
+
+
+/*** SIDEBAR STUFF ***/
 
 .sidebar {
     position: fixed;
@@ -72,7 +84,6 @@ textarea {
 }
 
 .sidebar-panel#editor-panel #editor {
-    border: 2px solid #cccccc;
     width: 90%;
     margin: 0 auto;
     height: 300px;
@@ -80,7 +91,7 @@ textarea {
 }
 
 
-/* sheet stuff */
+/*** SHEET STUFF ***/
 
 #jgrid-sheet {
     width: 100%;
@@ -98,7 +109,8 @@ textarea {
 }
 
 .jgrid-cell.selected {
-    border-color: #555555;
+    border: 1px solid #555555;
+    margin: 2px;
 }
 
 .jgrid-cell.has-error {

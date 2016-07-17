@@ -29,7 +29,10 @@
                                 ng-repeat="x in vm.gridX track by $index">
 
                                 <div class="jgrid-cell"
-                                    ng-class="{ 'selected': (vm.y == $parent.$index && vm.x == $index), 'has-error': vm.getError($index, $parent.$index) }">
+                                    ng-class="{ 
+                                        'selected': (vm.y == $parent.$index && vm.x == $index),
+                                        'has-error': vm.getError($index, $parent.$index),
+                                        'edit-mode': vm.y == $parent.$index && vm.x == $index && vm.aceEditorIsFocused }">
                                     {{ vm.getValue($index, $parent.$index) }}
                                 </div>
                             </td>
@@ -49,7 +52,10 @@
                     </div>
 
                     <pre>function(G, R, http) {</pre>
-                    <div id="editor" ui-ace="{ mode: 'javascript', theme: 'solarized_light', onLoad: vm.aceLoaded }" ng-model="vm.selectedScript"></div>
+                    <div id="editor" 
+                        ui-ace="{ mode: 'javascript', theme: 'solarized_light', onLoad: vm.aceLoaded }" 
+                        ng-model="vm.selectedScript"
+                        ng-class="{ 'edit-mode': vm.aceEditorIsFocused }"></div>
                     <pre>}</pre>
                 </div>
 
