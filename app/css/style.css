@@ -102,10 +102,11 @@ textarea {
 }
 
 .jgrid-cell {
-    border: 3px solid white;
+    margin: 3px;
     background-color: #eeeeee;
     min-height: 20px;
     padding: 3px;
+    border-radius: 3px;
 }
 
 .jgrid-cell.selected {

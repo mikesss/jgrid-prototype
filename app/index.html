@@ -12,7 +12,6 @@
     <div ng-controller="JGridCtrl as vm" ng-keypress="vm.handleKeypress($event)">
         <div class="pure-g" id="container">
             <div class="pure-u-15-24" id="grid">
-
                 <table class="pure-table pure-table-bordered" id="jgrid-sheet">
                     <thead>
                         <tr>
@@ -30,7 +29,7 @@
 
                                 <div class="jgrid-cell"
                                     ng-class="{ 
-                                        'selected': (vm.y == $parent.$index && vm.x == $index),
+                                        'selected': (vm.y == $parent.$index && vm.x == $index && !vm.aceEditorIsFocused),
                                         'has-error': vm.getError($index, $parent.$index),
                                         'edit-mode': vm.y == $parent.$index && vm.x == $index && vm.aceEditorIsFocused }">
                                     {{ vm.getValue($index, $parent.$index) }}
@@ -57,6 +56,10 @@
                         ng-model="vm.selectedScript"
                         ng-class="{ 'edit-mode': vm.aceEditorIsFocused }"></div>
                     <pre>}</pre>
+                </div>
+
+                <div class="sidebar-panel" id="selection-panel">
+
                 </div>
 
                 <div class="sidebar-panel" id="error-panel" ng-if="vm.getError(vm.x, vm.y)">

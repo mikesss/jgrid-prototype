@@ -65,19 +65,20 @@
         };
 
         vm.aceLoaded = function(_editor) {
-            _editor.$blockScrolling = Infinity
             vm.aceEditor = _editor;
+
+            vm.aceEditor.$blockScrolling = Infinity
+            vm.aceEditor.on('focus', function() { vm.aceEditorIsFocused = true; $scope.$apply(); });
+            vm.aceEditor.on('blur', function() { vm.aceEditorIsFocused = false; $scope.$apply(); });
         };
 
         vm.focusAceEditor = function(e) {
             e.preventDefault(); // without this, the keypress gets entered into the editor
             vm.aceEditor.focus();
-            vm.aceEditorIsFocused = true;
         };
 
         vm.blurAceEditor = function(e) {
             vm.aceEditor.blur();
-            vm.aceEditorIsFocused = false;
         };
 
         hotkeys.bindTo($scope)
