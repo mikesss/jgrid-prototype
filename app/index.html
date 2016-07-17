@@ -5,82 +5,8 @@
     <link rel="stylesheet" href="css/pure-min.css">
     <link rel="stylesheet" href="css/grids-responsive-min.css">
     <link rel="stylesheet" href="../node_modules/angular-hotkeys/build/hotkeys.css">
-    <style>
-        td.first-col {
-            background-color: #e0e0e0;
-        }
-
-        td.selected {
-            background-color: yellow;
-        }
-
-        td.has-error {
-            background-color: red;
-        }
-
-        #right-bar {
-            background-color: #333333;
-            padding: 20px;
-            color: white;
-            height: 100%;
-        }
-
-        textarea {
-            color: black;
-            height: 300px;
-            width: 100%;
-        }
-
-        #editor { 
-            width: 100%;
-            height: 300px;
-        }
-
-        #container {
-            height: 100%;
-        }
-
-        .sidebar {
-            position: fixed;
-            top: 0;
-            bottom: 0;
-
-            -webkit-box-shadow: 0px 0px 20px 0px rgba(0,0,0,.5);
-            -moz-box-shadow: 0px 0px 20px 0px rgba(0,0,0,.5);
-            box-shadow: 0px 0px 20px 0px rgba(0,0,0,.5);
-        }
-
-        #jgrid-sheet {
-            width: 100%;
-        }
-
-        .pure-table td {
-            padding: 0px 0px;
-        }
-
-        .jgrid-cell {
-            border: 3px solid white;
-            background-color: #eeeeee;
-            min-height: 20px;
-            padding: 3px;
-        }
-
-        .jgrid-cell.selected {
-            border-color: #555555;
-        }
-
-        .jgrid-cell.has-error {
-            background-color: red;
-        }
-
-        pre.errors {
-            background-color: red;
-            color: white;
-            padding: 2px;
-            font-size: .8em;
-            border-radius: 3px;
-        }
-    </style>
+    <link rel="stylesheet" href="css/source-code-pro/source-code-pro.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body ng-app="jGrid">
     <div ng-controller="JGridCtrl as vm" ng-keypress="vm.handleKeypress($event)">
@@ -114,16 +40,22 @@
             </div>
             <div class="sidebar pure-u-9-24">
 
-                <div id="right-bar">
+                <div class="sidebar-panel" id="header-panel">
                     <h1>jGrid</h1>
-
-                    <pre>function(G, R, http) {</pre>
-                    <div id="editor" ui-ace="{ mode: 'javascript', theme: 'monokai', onLoad: vm.aceLoaded }" ng-model="vm.selectedScript"></div>
-                    <pre>}</pre>
-
-                    <pre class="errors" ng-if="vm.getError(vm.x, vm.y)">{{ vm.getError(vm.x, vm.y).message }}</pre>
                 </div>
 
+                <div class="sidebar-panel" id="editor-panel">
+                    <div class="sidebar-panel-header">
+                    </div>
+
+                    <pre>function(G, R, http) {</pre>
+                    <div id="editor" ui-ace="{ mode: 'javascript', theme: 'solarized_light', onLoad: vm.aceLoaded }" ng-model="vm.selectedScript"></div>
+                    <pre>}</pre>
+                </div>
+
+                <div class="sidebar-panel" id="error-panel" ng-if="vm.getError(vm.x, vm.y)">
+                    <pre>{{ vm.getError(vm.x, vm.y).message }}</pre>
+                </div>
             </div>
         </div>
     </div>
