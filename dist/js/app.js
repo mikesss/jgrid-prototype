@@ -53,6 +53,10 @@
             return GridSelectorService.rowIsInSelectorList(y, SheetDataService.getRelatedSelectors(vm.x, vm.y));
         };
 
+        vm.isDependentCell = function(x, y) {
+          return GridSelectorService.pointIsInSelectorList(vm.x, vm.y, SheetDataService.getRelatedSelectors(x, y));  
+        };
+
         vm.moveUp = function(e) {
             e.preventDefault();
             vm.selectGrid(vm.x, Math.max(vm.y - 1, 0));

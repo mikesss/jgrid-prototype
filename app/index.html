@@ -43,10 +43,11 @@
 
                                 <div class="jgrid-cell"
                                     ng-class="{ 
-                                        'selected': vm.y == $parent.$index && vm.x == $index,
-                                        'related-cell': vm.isDependencyCell($index, $parent.$index),
-                                        'has-error': vm.getError($index, $parent.$index),
-                                        'edit-mode': vm.aceEditorIsFocused && ((vm.y == $parent.$index && vm.x == $index) || vm.isDependencyCell($index, $parent.$index))  }">
+                                        'selected'          : vm.y == $parent.$index && vm.x == $index,
+                                        'related-cell'      : vm.isDependencyCell($index, $parent.$index),
+                                        'dependent-cell'    : vm.isDependentCell($index, $parent.$index),
+                                        'has-error'         : vm.getError($index, $parent.$index),
+                                        'edit-mode'         : vm.aceEditorIsFocused && ((vm.y == $parent.$index && vm.x == $index) || vm.isDependencyCell($index, $parent.$index) || vm.isDependentCell($index, $parent.$index))  }">
                                     {{ vm.getValue($index, $parent.$index) }}
                                 </div>
                             </td>

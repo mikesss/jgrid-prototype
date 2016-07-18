@@ -158,3 +158,21 @@ td.first-cell {
     background-color: lightblue;
     color: black;
 }
+
+.jgrid-cell.dependent-cell {
+    border: 1px solid orange;
+    margin: 3px;
+}
+
+.jgrid-cell.dependent-cell.edit-mode {
+    background-color: peachpuff;
+}
+
+.jgrid-cell.dependent-cell.related-cell {
+    border: 1px solid green;
+    margin: 3px;
+}
+
+.jgrid-cell.dependent-cell.related-cell.edit-mode {
+    background-color: lightgreen;
+}
