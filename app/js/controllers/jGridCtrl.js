@@ -67,8 +67,8 @@
             vm.aceEditor = _editor;
 
             vm.aceEditor.$blockScrolling = Infinity
-            vm.aceEditor.on('focus', function() { vm.aceEditorIsFocused = true; });
-            vm.aceEditor.on('blur', function() { vm.aceEditorIsFocused = false; });
+            vm.aceEditor.on('focus', function(e) { vm.aceEditorIsFocused = true; });
+            vm.aceEditor.on('blur', function(e) { vm.aceEditorIsFocused = false; });
         };
 
         vm.focusAceEditor = function(e) {
