@@ -35,9 +35,9 @@ textarea {
 .edit-mode {
     position: relative;
     z-index: 100;
-    -webkit-box-shadow: 4px 4px 10px 5px rgba(0,0,0,0.25);
-    -moz-box-shadow: 4px 4px 10px 5px rgba(0,0,0,0.25);
-    box-shadow: 4px 4px 10px 5px rgba(0,0,0,0.25);
+    -webkit-box-shadow: 4px 4px 10px 2px rgba(0,0,0,0.25);
+    -moz-box-shadow: 4px 4px 10px 2px rgba(0,0,0,0.25);
+    box-shadow: 4px 4px 10px 2px rgba(0,0,0,0.25);
 }
 
 
@@ -144,7 +144,17 @@ td.first-cell {
     background-color: red;
 }
 
+.jgrid-cell.selected.edit-mode {
+    background-color: #333333;
+    color: white;
+}
+
 .jgrid-cell.related-cell {
     border: 1px solid blue;
     margin: 3px;
+}
+
+.jgrid-cell.related-cell.edit-mode{
+    background-color: lightblue;
+    color: black;
 }
