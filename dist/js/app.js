@@ -19,20 +19,21 @@
 (function() {
     require('angular/angular');
 
-    function JGridCtrl($scope, $interval, hotkeys, SheetDataService) {
+    function JGridCtrl($scope, $interval, hotkeys, SheetDataService, GridSelectorService) {
         var vm              = this;
 
         SheetDataService.loadFromLocalStorage();
 
-        vm.gridX                = new Array(10);
-        vm.gridY                = new Array(10);
-        vm.x                    = 0;
-        vm.y                    = 0;
-        vm.selectedScript       = SheetDataService.getScript(0, 0);
-        vm.updateDelay          = 100;
-        vm.activeUpdateCycle    = null;
-        vm.aceEditor            = null;
-        vm.aceEditorIsFocused   = false;
+        vm.gridX                    = new Array(10);
+        vm.gridY                    = new Array(10);
+        vm.x                        = 0;
+        vm.y                        = 0;
+        vm.selectedScript           = SheetDataService.getScript(0, 0);
+        vm.selectedScriptDepSels    = null;
+        vm.updateDelay              = 100;
+        vm.activeUpdateCycle        = null;
+        vm.aceEditor                = null;
+        vm.aceEditorIsFocused       = false;
 
         vm.selectGrid = function(x, y) {
             vm.x = x;
@@ -41,7 +42,7 @@
         };
 
         vm.isDependencyCell = function(x, y) {
-            return SheetDataService.cellIsDependentOn(x, y, vm.x, vm.y);
+            return GridSelectorService.pointIsInSelectorList(x, y, SheetDataService.getRelatedSelectors(vm.x, vm.y));
         };
 
         vm.moveUp = function(e) {
@@ -76,8 +77,8 @@
             vm.aceEditor = _editor;
 
             vm.aceEditor.$blockScrolling = Infinity
-            vm.aceEditor.on('focus', function() { vm.aceEditorIsFocused = true; $scope.$apply(); });
-            vm.aceEditor.on('blur', function() { vm.aceEditorIsFocused = false; $scope.$apply(); });
+            vm.aceEditor.on('focus', function() { vm.aceEditorIsFocused = true; });
+            vm.aceEditor.on('blur', function() { vm.aceEditorIsFocused = false; });
         };
 
         vm.focusAceEditor = function(e) {
@@ -177,9 +178,7 @@
         };
 
         return {
-            /*
-             * { count: n, rowStart: n, rowEnd: n, col: n } ??????
-             */
+
             toCoordSet: function(sel) {
                 var sets    = [];
                 var areas   = sel.split(',');
@@ -222,8 +221,54 @@
                 return sets;
             },
 
-            toSel: (coords) => {
+            pointIsInSelector: function(x, y, sel) {
+                var sets    = [];
+                var areas   = sel.split(',');
 
+                for(var i = 0; i < areas.length; i++) {
+                    var range   = areas[i].trim().split(':');
+                    var start   = range[0];
+                    var end     = range[1];
+
+                    if(start.match(/^\d$/)) {
+                        if(y >= Number(start) - 1 && y <= Number(end) - 1) {
+                            return true;
+                        }
+                    } else if(start.match(/^\w$/)) {
+                        if(x >= columnLetterToIndex(start) && x <= columnLetterToIndex(end)) {
+                            return true;
+                        }
+                    } else if(start.match(/^\w\d$/)) {
+                        if(!end) {
+                            end = start;
+                        }
+                        
+                        var x1 = columnLetterToIndex(start[0]);
+                        var y1 = Number(start[1]) - 1;
+                        var x2 = columnLetterToIndex(end[0]);
+                        var y2 = Number(end[1]) - 1;
+
+                        if(x >= x1 && x <= x2 && y >= y1 && y <= y2) {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            },
+
+            pointIsInSelectorList: function(x, y, sels) {
+                if(!sels) {
+                    return false;
+                }
+
+                for(var i = 0; i < sels.length; i++) {
+                    if(this.pointIsInSelector(x, y, sels[i])) {
+                        return true;
+                    }
+                }
+
+                return false;
             }
         };
     }
@@ -373,6 +418,10 @@
 
             getError: function(x, y) {
                 return getError(x, y);
+            },
+
+            getRelatedSelectors: function(x, y) {
+                return getRelatedSelectors(x, y);
             },
 
             setScript: function(x, y, script) {

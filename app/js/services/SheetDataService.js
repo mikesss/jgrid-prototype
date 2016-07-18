@@ -139,6 +139,10 @@
                 return getError(x, y);
             },
 
+            getRelatedSelectors: function(x, y) {
+                return getRelatedSelectors(x, y);
+            },
+
             setScript: function(x, y, script) {
                 setScript(x, y, script);
             },

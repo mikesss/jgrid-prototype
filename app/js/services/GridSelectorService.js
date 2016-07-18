@@ -7,9 +7,7 @@
         };
 
         return {
-            /*
-             * { count: n, rowStart: n, rowEnd: n, col: n } ??????
-             */
+
             toCoordSet: function(sel) {
                 var sets    = [];
                 var areas   = sel.split(',');
@@ -52,8 +50,54 @@
                 return sets;
             },
 
-            toSel: (coords) => {
+            pointIsInSelector: function(x, y, sel) {
+                var sets    = [];
+                var areas   = sel.split(',');
 
+                for(var i = 0; i < areas.length; i++) {
+                    var range   = areas[i].trim().split(':');
+                    var start   = range[0];
+                    var end     = range[1];
+
+                    if(start.match(/^\d$/)) {
+                        if(y >= Number(start) - 1 && y <= Number(end) - 1) {
+                            return true;
+                        }
+                    } else if(start.match(/^\w$/)) {
+                        if(x >= columnLetterToIndex(start) && x <= columnLetterToIndex(end)) {
+                            return true;
+                        }
+                    } else if(start.match(/^\w\d$/)) {
+                        if(!end) {
+                            end = start;
+                        }
+                        
+                        var x1 = columnLetterToIndex(start[0]);
+                        var y1 = Number(start[1]) - 1;
+                        var x2 = columnLetterToIndex(end[0]);
+                        var y2 = Number(end[1]) - 1;
+
+                        if(x >= x1 && x <= x2 && y >= y1 && y <= y2) {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            },
+
+            pointIsInSelectorList: function(x, y, sels) {
+                if(!sels) {
+                    return false;
+                }
+
+                for(var i = 0; i < sels.length; i++) {
+                    if(this.pointIsInSelector(x, y, sels[i])) {
+                        return true;
+                    }
+                }
+
+                return false;
             }
         };
     }

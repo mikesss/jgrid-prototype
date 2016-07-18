@@ -1,20 +1,21 @@
 (function() {
     require('angular/angular');
 
-    function JGridCtrl($scope, $interval, hotkeys, SheetDataService) {
+    function JGridCtrl($scope, $interval, hotkeys, SheetDataService, GridSelectorService) {
         var vm              = this;
 
         SheetDataService.loadFromLocalStorage();
 
-        vm.gridX                = new Array(10);
-        vm.gridY                = new Array(10);
-        vm.x                    = 0;
-        vm.y                    = 0;
-        vm.selectedScript       = SheetDataService.getScript(0, 0);
-        vm.updateDelay          = 100;
-        vm.activeUpdateCycle    = null;
-        vm.aceEditor            = null;
-        vm.aceEditorIsFocused   = false;
+        vm.gridX                    = new Array(10);
+        vm.gridY                    = new Array(10);
+        vm.x                        = 0;
+        vm.y                        = 0;
+        vm.selectedScript           = SheetDataService.getScript(0, 0);
+        vm.selectedScriptDepSels    = null;
+        vm.updateDelay              = 100;
+        vm.activeUpdateCycle        = null;
+        vm.aceEditor                = null;
+        vm.aceEditorIsFocused       = false;
 
         vm.selectGrid = function(x, y) {
             vm.x = x;
@@ -23,7 +24,7 @@
         };
 
         vm.isDependencyCell = function(x, y) {
-            return SheetDataService.cellIsDependentOn(x, y, vm.x, vm.y);
+            return GridSelectorService.pointIsInSelectorList(x, y, SheetDataService.getRelatedSelectors(vm.x, vm.y));
         };
 
         vm.moveUp = function(e) {
@@ -58,8 +59,8 @@
             vm.aceEditor = _editor;
 
             vm.aceEditor.$blockScrolling = Infinity
-            vm.aceEditor.on('focus', function() { vm.aceEditorIsFocused = true; $scope.$apply(); });
-            vm.aceEditor.on('blur', function() { vm.aceEditorIsFocused = false; $scope.$apply(); });
+            vm.aceEditor.on('focus', function() { vm.aceEditorIsFocused = true; });
+            vm.aceEditor.on('blur', function() { vm.aceEditorIsFocused = false; });
         };
 
         vm.focusAceEditor = function(e) {
