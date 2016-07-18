@@ -110,8 +110,8 @@ textarea {
 }
 
 .jgrid-cell.selected {
-    border: 1px solid #555555;
-    margin: 3px;
+    border: 2px solid #555555;
+    margin: 2px;
 }
 
 .jgrid-cell.has-error {
