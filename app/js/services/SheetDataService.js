@@ -200,7 +200,7 @@
                         y.error     = error;
 
                         if(y.src != null) {
-                            var re = /R\('(.*)'\)/g;
+                            var re = /R\('(.*?)'\)/g;
                             var matches, groups = [];
                             while(matches = re.exec(y.src)) {
                                 groups.push(matches[1]);
