@@ -48,6 +48,16 @@
                 return null;
             },
 
+            getRelatedSelectors = function(x, y) {
+                if(x in map) {
+                    if(y in map[x]) {
+                        return map[x][y].relatedSelectors || [];
+                    }
+                }
+
+                return [];
+            },
+
             mapFromCoordSet = function(set, f) {
                 var results = [];
                 for(var i = 0; i < set.length; i++) {
@@ -88,6 +98,14 @@
 
             mapValuesFromCoordSet = function(set) {
                 return mapFromCoordSet(set, getValue);
+            },
+
+            pointIsInCoordSet = function(x0, y0, set) {
+                if(!set) {
+                    return false;
+                }
+                var booleans = mapFromCoordSet(set, function(x, y) { return x == x0 && y == y0; });
+                return booleans.indexOf(true) >= 0;
             };
 
         return {
@@ -136,6 +154,20 @@
 
             },
 
+            cellIsDependentOn: function(x1, y1, x2, y2) {
+                var selectorsFrom2  = getRelatedSelectors(x2, y2),
+                    coordSet        = null;
+
+                for(var j = 0; j < selectorsFrom2.length; j++) {
+                    coordSet = GridSelectorService.toCoordSet(selectorsFrom2[j]);
+                    if(pointIsInCoordSet(x1, y1, coordSet)) {
+                        return true;
+                    }
+                }
+
+                return false;
+            },
+
             computeValues: function() {
                 var that        = this,
                     hasChanged  = false;
@@ -159,9 +191,19 @@
                             val = null;
                         }
 
-                        hasChanged = hasChanged || !angular.equals(y.val, val) || !angular.equals(y.error, error);
-                        y.val = val;
-                        y.error = error;
+                        hasChanged  = hasChanged || !angular.equals(y.val, val) || !angular.equals(y.error, error);
+                        y.val       = val;
+                        y.error     = error;
+
+                        if(y.src != null) {
+                            var re = /R\('(.*)'\)/g;
+                            var matches, groups = [];
+                            while(matches = re.exec(y.src)) {
+                                groups.push(matches[1]);
+                            }
+
+                            y.relatedSelectors = groups;
+                        }
                     });
                 });
 

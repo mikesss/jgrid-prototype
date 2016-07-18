@@ -22,6 +22,10 @@
             vm.selectedScript = SheetDataService.getScript(x, y);
         };
 
+        vm.isDependencyCell = function(x, y) {
+            return SheetDataService.cellIsDependentOn(x, y, vm.x, vm.y);
+        };
+
         vm.moveUp = function(e) {
             e.preventDefault();
             vm.selectGrid(vm.x, Math.max(vm.y - 1, 0));

@@ -24,12 +24,13 @@
                     <tbody>
                         <tr ng-repeat="y in vm.gridY track by $index">
                             <td class="first-col">{{ $index + 1 }}</td>
-                            <td ng-click="vm.selectGrid($index, $parent.$index)"
+                            <td ng-mousedown="vm.selectGrid($index, $parent.$index)"
                                 ng-repeat="x in vm.gridX track by $index">
 
                                 <div class="jgrid-cell"
                                     ng-class="{ 
                                         'selected': (vm.y == $parent.$index && vm.x == $index && !vm.aceEditorIsFocused),
+                                        'related-cell': vm.isDependencyCell($index, $parent.$index),
                                         'has-error': vm.getError($index, $parent.$index),
                                         'edit-mode': vm.y == $parent.$index && vm.x == $index && vm.aceEditorIsFocused }">
                                     {{ vm.getValue($index, $parent.$index) }}

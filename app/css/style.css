@@ -117,3 +117,8 @@ textarea {
 .jgrid-cell.has-error {
     background-color: red;
 }
+
+.jgrid-cell.related-cell {
+    border: 1px solid blue;
+    margin: 3px;
+}
