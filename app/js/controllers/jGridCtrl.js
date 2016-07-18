@@ -27,6 +27,14 @@
             return GridSelectorService.pointIsInSelectorList(x, y, SheetDataService.getRelatedSelectors(vm.x, vm.y));
         };
 
+        vm.isDependencyCol = function(x) {
+            return GridSelectorService.colIsInSelectorList(x, SheetDataService.getRelatedSelectors(vm.x, vm.y));
+        };
+
+        vm.isDependencyRow = function(y) {
+            return GridSelectorService.rowIsInSelectorList(y, SheetDataService.getRelatedSelectors(vm.x, vm.y));
+        };
+
         vm.moveUp = function(e) {
             e.preventDefault();
             vm.selectGrid(vm.x, Math.max(vm.y - 1, 0));

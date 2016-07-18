@@ -4,10 +4,6 @@ html, button, input, select, textarea,
     font-family: 'Source Code Pro';
 }
 
-td.first-col {
-    background-color: #e0e0e0;
-}
-
 td.selected {
     background-color: yellow;
 }
@@ -97,8 +93,38 @@ textarea {
     width: 100%;
 }
 
-.pure-table td {
+.pure-table td,
+.pure-table th {
     padding: 0px 0px;
+}
+
+.jgrid-col-header {
+    text-align: center;
+    margin: 4px;
+    padding: 5px;
+    border-radius: 3px;
+}
+
+.jgrid-col-header.related-col {
+    background-color: blue;
+    color: white;
+}
+
+td.first-cell {
+    background-color: #e0e0e0;
+}
+
+.jgrid-row-header {
+    margin: 4px;
+    padding: 5px;
+    text-align: right;
+    border-radius: 3px;
+    font-weight: 600;
+}
+
+.jgrid-row-header.related-row {
+    background-color: blue;
+    color: white;
 }
 
 .jgrid-cell {

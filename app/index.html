@@ -16,14 +16,22 @@
                     <thead>
                         <tr>
                             <th></th>
-                            <th ng-repeat="y in vm.gridY track by $index">
-                                {{ $index + 1 | indexToHeader }}
+                            <th ng-repeat="x in vm.gridX track by $index">
+                                <div class="jgrid-col-header"
+                                     ng-class="{ 'related-col': vm.isDependencyCol($index) }">
+                                    {{ $index + 1 | indexToHeader }}
+                                </div>
                             </th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr ng-repeat="y in vm.gridY track by $index">
-                            <td class="first-col">{{ $index + 1 }}</td>
+                            <td class="first-cell">
+                                <div class="jgrid-row-header"
+                                     ng-class="{ 'related-row': vm.isDependencyRow($index) }">
+                                    {{ $index + 1 }}
+                                </div>
+                            </td>
                             <td ng-mousedown="vm.selectGrid($index, $parent.$index)"
                                 ng-repeat="x in vm.gridX track by $index">
 

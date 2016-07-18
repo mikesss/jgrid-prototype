@@ -45,6 +45,14 @@
             return GridSelectorService.pointIsInSelectorList(x, y, SheetDataService.getRelatedSelectors(vm.x, vm.y));
         };
 
+        vm.isDependencyCol = function(x) {
+            return GridSelectorService.colIsInSelectorList(x, SheetDataService.getRelatedSelectors(vm.x, vm.y));
+        };
+
+        vm.isDependencyRow = function(y) {
+            return GridSelectorService.rowIsInSelectorList(y, SheetDataService.getRelatedSelectors(vm.x, vm.y));
+        };
+
         vm.moveUp = function(e) {
             e.preventDefault();
             vm.selectGrid(vm.x, Math.max(vm.y - 1, 0));
@@ -269,7 +277,73 @@
                 }
 
                 return false;
-            }
+            },
+
+            colIsInSelector: function(x, sel) {
+                var sets    = [];
+                var areas   = sel.split(',');
+
+                for(var i = 0; i < areas.length; i++) {
+                    var range   = areas[i].trim().split(':');
+                    var start   = range[0];
+                    var end     = range[1];
+
+                    if(start.match(/^\w$/)) {
+                        if(x >= columnLetterToIndex(start) && x <= columnLetterToIndex(end)) {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;                
+            },
+
+            colIsInSelectorList: function(x, sels) {
+                if(!sels) {
+                    return false;
+                }
+
+                for(var i = 0; i < sels.length; i++) {
+                    if(this.colIsInSelector(x, sels[i])) {
+                        return true;
+                    }
+                }
+
+                return false;
+            },
+
+            rowIsInSelector: function(y, sel) {
+                var sets    = [];
+                var areas   = sel.split(',');
+
+                for(var i = 0; i < areas.length; i++) {
+                    var range   = areas[i].trim().split(':');
+                    var start   = range[0];
+                    var end     = range[1];
+
+                    if(start.match(/^\d$/)) {
+                        if(y >= Number(start) - 1 && y <= Number(end) - 1) {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;                
+            },
+
+            rowIsInSelectorList: function(y, sels) {
+                if(!sels) {
+                    return false;
+                }
+
+                for(var i = 0; i < sels.length; i++) {
+                    if(this.rowIsInSelector(y, sels[i])) {
+                        return true;
+                    }
+                }
+
+                return false;
+            },
         };
     }
 
