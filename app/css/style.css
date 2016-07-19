@@ -62,12 +62,19 @@ textarea {
 
 .sidebar-panel#header-panel {
     background-color: purple;
+    border: 1px solid darkpurple;
     color: white;
 }
 
 .sidebar-panel#header-panel h1 {
     font-weight: 200;
     margin: 10px;
+}
+
+.sidebar-panel#header-panel h3 {
+    font-weight: 200;
+    margin: 0 10px 10px 10px;
+    font-size: .75em;
 }
 
 .sidebar-panel#error-panel {
@@ -133,6 +140,7 @@ td.first-cell {
     min-height: 20px;
     padding: 3px;
     border-radius: 3px;
+    overflow: hidden;
 }
 
 .jgrid-cell.selected {
