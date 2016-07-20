@@ -2,7 +2,7 @@
     require('angular/angular');
     var http = require('http');
 
-    function SheetDataService(GridSelectorService) {
+    function SheetDataService($http, $q, GridSelectorService) {
         var map = {},
 
             getScript = function(x, y) { 
@@ -172,6 +172,15 @@
                 return false;
             },
 
+            getJson: function(url) {
+                return $http({
+                    method: 'GET',
+                    url: url
+                }).then(function(res) {
+                    return res.data;
+                });
+            },
+
             computeValues: function() {
                 var that        = this,
                     hasChanged  = false;
@@ -181,14 +190,22 @@
                         // we catch and store any exceptions that occur
                         try {
                             // create function for the cell and evaluate it
-                            var f       = new Function('G', 'R', 'http', y.src);
-                            var val     = f(that.getValue, that.getValueBySel, http);
+                            var f       = new Function('_', y.src);
+                            var val     = f({ R: that.getValueBySel, getJson: that.getJson });
                             var error   = null;
 
-                            if(val instanceof Promise) {
-                                // if the computed value is a promise (such as from http)
+                            if(val && val.$$state) {
+                                // if the computed value is a promise (such as from $http)
                                 // then we need to do something special here
-                                val.then((v) => y.val = v).catch((e) => console.error(e));
+                                val.then(function success(v) { 
+                                    y.val = v; 
+                                    //y.error = null; 
+                                }, function error(res) {
+                                    y.error = res;
+                                    y.val = null;
+                                });
+
+                                return;
                             }
                         } catch(e) {
                             error = e;
