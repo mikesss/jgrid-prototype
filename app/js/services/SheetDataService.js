@@ -199,9 +199,9 @@
                                 // then we need to do something special here
                                 val.then(function success(v) { 
                                     y.val = v; 
-                                    //y.error = null; 
+                                    y.error = null; 
                                 }, function error(res) {
-                                    y.error = res;
+                                    y.error = { message: res.status + ": " + res.statusText };
                                     y.val = null;
                                 });
 
